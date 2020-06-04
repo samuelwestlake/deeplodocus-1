@@ -396,8 +396,14 @@ class FrontalLobe(object):
             if self.config.model.from_file:
                 checkpoint = self.__load_checkpoint()
                 if "optimizer_state_dict" in checkpoint:
-                    optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-                    state_msg = " with state dict from %s" % self.config.model.file
+                    try:
+                        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+                        state_msg = " with state dict from %s" % self.config.model.file
+                    except ValueError as e:
+                        Notification(
+                            DEEP_NOTIF_WARNING,
+                            "Could not load stated dict from %s : %s" % (self.config.model.file, str(e))
+                        )
 
             # If model exists, load the into the frontal lobe
             if optimizer is None:
