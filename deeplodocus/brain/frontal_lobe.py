@@ -882,4 +882,4 @@ class FrontalLobe(object):
         text = "Loading %s :" % text
         Notification(DEEP_NOTIF_INFO, "")
         Notification(DEEP_NOTIF_INFO, text)
-        Notification(DEEP_NOTIF_INFO, "‾" * len(text))
+        Notification(DEEP_NOTIF_INFO, "-" * len(text))  # "‾"
