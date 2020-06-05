@@ -12,7 +12,7 @@ except ImportError:
 from deeplodocus import __version__
 from deeplodocus.brain.frontal_lobe import FrontalLobe
 from deeplodocus.brain.thalamus import Thalamus
-from deeplodocus.brain.visual_cortex import VisualCortex
+# from deeplodocus.brain.visual_cortex import VisualCortex
 from deeplodocus.utils.dict_utils import convert_dict
 from deeplodocus.flags import *
 from deeplodocus.utils.generic_utils import convert
