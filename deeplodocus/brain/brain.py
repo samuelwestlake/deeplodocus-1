@@ -9,7 +9,6 @@ try:
 except ImportError:
     pass
 
-import numpy as np
 from deeplodocus import __version__
 from deeplodocus.brain.frontal_lobe import FrontalLobe
 from deeplodocus.brain.thalamus import Thalamus
