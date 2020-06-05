@@ -19,8 +19,9 @@ from deeplodocus.utils.generic_utils import convert
 from deeplodocus.utils.logo import Logo
 from deeplodocus.utils.notification import Notification, DeepError
 from deeplodocus.utils.namespace import Namespace
+
 from deeplodocus.utils.vis_utils import plot_history
-from deeplodocus.brain.visual_cortex.graph import Graph
+# from deeplodocus.brain.visual_cortex.graph import Graph
 from deeplodocus.core.project.structure.config import *
 
 
