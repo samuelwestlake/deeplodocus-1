@@ -33,6 +33,9 @@ class Namespace(object):
             else:
                 print("Warning: unused argument %s" % arg)
 
+    def __iter__(self):
+        return self.__dict__.__iter__()
+
     def add(self, dictionary, sub_space=None):
         """
         Author: SW
@@ -309,4 +312,4 @@ if __name__ == "__main__":
     namespace = Namespace({"a": 1, "b": 2, "c": {"d": 5, "e": 6}})
     a = {"project": "../yaml1", "network": {"gv": 56, "you": 90}, "test" : (1, "a", 1.2)}
     namespace.add(a, ["c", "main", "moop"])
-    namespace.summary()
+    # namespace.summary()
