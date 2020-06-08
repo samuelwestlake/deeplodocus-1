@@ -429,7 +429,7 @@ class FrontalLobe(object):
                         Notification(DEEP_NOTIF_INFO, "%s : Optimizer updated " % item.name)
 
                 # Update scheduler with new optimizer
-                if self.trainer is not None:
+                if self.trainer is not None and self.config.training.scheduler.enabled:
                     self.load_scheduler()
                     self.trainer.scheduler = self.scheduler
 
@@ -542,7 +542,7 @@ class FrontalLobe(object):
             )
 
             # Initialise scheduler
-            if self.optimizer is not None:
+            if self.optimizer is not None and self.config.training.scheduler.enabled:
                 self.load_scheduler()
 
             # Initialise trainer
@@ -563,7 +563,7 @@ class FrontalLobe(object):
             Notification(DEEP_NOTIF_INFO, "Trainer disabled")
 
     def load_scheduler(self):
-        scheduler, scheduler_module = get_module(**self.config.training.scheduler.get(ignore=["kwargs"]))
+        scheduler, scheduler_module = get_module(**self.config.training.scheduler.get(ignore=["kwargs", "enabled"]))
         self.scheduler = scheduler(self.optimizer, **vars(self.config.training.scheduler.kwargs))
 
     def load_validator(self):

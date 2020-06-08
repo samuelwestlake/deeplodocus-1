@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -17,19 +18,21 @@ class LeNet(nn.Module):
     Implementation of LeNet as defined in : http://yann.lecun.com/exdb/lenet/
     The implementation is slightly modified with the number of hidden units in the fully connected layers
     """
-    def __init__(self, num_channels=1, num_classes=10):
+    def __init__(self, num_channels=1, num_classes=10, size=(28, 28)):
         super(LeNet, self).__init__()
+        latent_size = int(torch.prod((torch.tensor(size, dtype=torch.float32) / 4) - 3).item()) * 50
         self.conv1 = nn.Conv2d(num_channels, 20, 5, 1)
         self.conv2 = nn.Conv2d(20, 50, 5, 1)
-        self.fc1 = nn.Linear(4*4*50, 84)
+        self.fc1 = nn.Linear(latent_size, 84)
         self.fc2 = nn.Linear(84, num_classes)
 
     def forward(self, x):
+        b = x.shape[0]
         x = F.relu(self.conv1(x))
         x = F.max_pool2d(x, 2, 2)
         x = F.relu(self.conv2(x))
         x = F.max_pool2d(x, 2, 2)
-        x = x.view(-1, 4*4*50)
+        x = x.view(b, -1)
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)

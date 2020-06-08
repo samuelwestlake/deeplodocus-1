@@ -91,7 +91,8 @@ DEEP_CONFIG = {
         },
         "imports": {
             DEEP_CONFIG_DTYPE: [str],
-            DEEP_CONFIG_DEFAULT: None
+            DEEP_CONFIG_DEFAULT: None,
+            DEEP_CONFIG_INIT: "numpy as np"
         }
     },
     DEEP_CONFIG_MODEL: {
@@ -184,6 +185,11 @@ DEEP_CONFIG = {
                 DEEP_CONFIG_DEFAULT: None,
                 DEEP_CONFIG_DTYPE: str,
                 DEEP_CONFIG_INIT: "torch.optim.lr_scheduler"
+            },
+            "enabled": {
+                DEEP_CONFIG_DEFAULT: False,
+                DEEP_CONFIG_DTYPE: bool,
+                DEEP_CONFIG_INIT: True
             },
             "kwargs": {
                 DEEP_CONFIG_DEFAULT: {},
