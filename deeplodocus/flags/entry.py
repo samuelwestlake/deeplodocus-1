@@ -4,11 +4,6 @@ from deeplodocus.utils.flag import Flag
 # ENTRIES
 #
 
-DEEP_ENTRY_INPUT = 0
-DEEP_ENTRY_LABEL = 1
-DEEP_ENTRY_OUTPUT = 2
-DEEP_ENTRY_ADDITIONAL_DATA = 3
-
 DEEP_ENTRY_INPUT = Flag(
     name="Model Input",
     description="Input entry",
@@ -32,5 +27,12 @@ DEEP_ENTRY_ADDITIONAL_DATA = Flag(
     description="Additional Data entry",
     names=["additional_data"]
 )
+
+DEEP_ENTRY_MODEL = Flag(
+    name="Model",
+    description="Model entry",
+    names=["model", "network"]
+)
+
 
 DEEP_ENTRY_BASE_FILE_NAME = get_main_path() + "/data/auto-generated_dataset_source_folder_%i.dat"

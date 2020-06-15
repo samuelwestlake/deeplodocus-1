@@ -389,13 +389,13 @@ class FrontalLobe(object):
             # Load the optimizer
             optimizer = load_optimizer(
                 model=self.model,
-                **self.config.optimizer.get()
+                **self.config.optimizer.get(ignore=["load_state_dict"])
             )
 
             state_msg = ""
             if self.config.model.from_file:
                 checkpoint = self.__load_checkpoint()
-                if "optimizer_state_dict" in checkpoint:
+                if "optimizer_state_dict" in checkpoint and self.config.optimizer.load_state_dict:
                     try:
                         optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
                         state_msg = " with state dict from %s" % self.config.model.file
@@ -563,8 +563,31 @@ class FrontalLobe(object):
             Notification(DEEP_NOTIF_INFO, "Trainer disabled")
 
     def load_scheduler(self):
+        Notification(
+            DEEP_NOTIF_INFO,
+            "Loading learn rate scheduler : %s from %s" % (
+                self.config.training.scheduler.name,
+                self.config.training.scheduler.module
+            )
+        )
         scheduler, scheduler_module = get_module(**self.config.training.scheduler.get(ignore=["kwargs", "enabled"]))
-        self.scheduler = scheduler(self.optimizer, **vars(self.config.training.scheduler.kwargs))
+        if scheduler is not None:
+            self.scheduler = scheduler(self.optimizer, **vars(self.config.training.scheduler.kwargs))
+            Notification(
+                DEEP_NOTIF_SUCCESS,
+                "Loaded learn rate scheduler : %s from %s" % (
+                    self.config.training.scheduler.name,
+                    scheduler_module
+                )
+            )
+        else:
+            Notification(
+                DEEP_NOTIF_FATAL,
+                "Unable to import learn rate scheduler : %s from %s" % (
+                    self.config.training.scheduler.name,
+                    self.config.training.scheduler.module
+                )
+            )
 
     def load_validator(self):
         """

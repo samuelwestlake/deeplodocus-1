@@ -78,7 +78,7 @@ class Trainer(Inferer):
         for self.epoch in range(self.initial_epoch + 1, self.num_epochs + self.initial_epoch + 1):
             self.epoch_start()
             for self.batch_index, batch in enumerate(self.dataloader, 1):
-                self.forward(batch)
+                self.forward2(batch, split=4)
             self.epoch_end()
         self.training_end()
 
@@ -128,19 +128,54 @@ class Trainer(Inferer):
 
     def forward(self, batch):
         inputs, labels, additional_data = self.clean_single_element_list(batch)  # Clean the given data
-        self.optimizer.zero_grad()  # zero the parameter gradients
-        inputs = self.to_device(inputs, self.model.device)  # Send data to device
+
+        # Zero the parameter gradients
+        self.optimizer.zero_grad()
+
+        # Send data to device
+        inputs = self.to_device(inputs, self.model.device)
         labels = self.to_device(labels, self.model.device)
         additional_data = self.to_device(additional_data, self.model.device)
-        outputs = self.model(*inputs)  # Forward pass
+
+        # Forward pass
+        outputs = self.model(*inputs)
+
+        # Compute losses
         loss, losses = self.losses.forward(
-            self.dataset.type, outputs, labels, inputs, additional_data
-        )  # Calculate train losses and total training loss
-        loss.backward()  # Backward pass
+            flag=self.dataset.type,
+            model=self.model,
+            outputs=outputs,
+            labels=labels,
+            inputs=inputs,
+            additional_data=additional_data
+        )
+
+        # Backward pass
+        loss.backward()
         self.optimizer.step()
+
         outputs = self.detach(outputs)  # Detach output tensors
-        outputs = self.transform_manager.transform(outputs, inputs, labels, additional_data)
-        metrics = self.metrics.forward(self.dataset.type, outputs, labels, inputs, additional_data)
+
+        # Output transforms
+        outputs = self.transform_manager.transform(
+            model=self.model,
+            outputs=outputs,
+            inputs=inputs,
+            labels=labels,
+            additional_data=additional_data
+        )
+
+        # Compute metrics
+        metrics = self.metrics.forward(
+            flag=self.dataset.type,
+            model=self.model,
+            outputs=outputs,
+            labels=labels,
+            inputs=inputs,
+            additional_data=additional_data
+        )
+
+        # Print batch and send signal
         if DEEP_VERBOSE_BATCH.corresponds(self.verbose):
             self.print_batch(loss.item(), losses, metrics)
         else:
@@ -175,10 +210,33 @@ class Trainer(Inferer):
 
             out = self.model(*inp)  # Forward pass
 
-            mini_loss, mini_losses = self.losses.forward(self.dataset.type, out, lab, inp, add)  # Loss function
+            mini_loss, mini_losses = self.losses.forward(
+                flag=self.dataset.type,
+                model=self.model,
+                outputs=out,
+                labels=lab,
+                inputs=inp,
+                additional_data=add
+            )  # Loss function
+
             out = self.detach(out)  # Detach output tensors
-            out = self.transform_manager.transform(out, inp, lab, add)  # Output transforms
-            mini_metrics = self.metrics.forward(self.dataset.type, out, lab, inp, add)  # Metrics
+
+            out = self.transform_manager.transform(
+                model=self.model,
+                outputs=out,
+                inputs=inp,
+                labels=lab,
+                additional_data=add
+            )  # Output transforms
+
+            mini_metrics = self.metrics.forward(
+                flag=self.dataset.type,
+                model=self.model,
+                outputs=out,
+                labels=lab,
+                inputs=inp,
+                additional_data=add
+            )  # Metrics
 
             mini_loss.backward()
 

@@ -35,8 +35,7 @@ class Activate(object):
             outputs.inference = torch.cat(
                 [
                     self.__forward(x, anchors=anchors, stride=stride)
-                    for x, anchors, stride in
-                    zip(outputs.inference, outputs.anchors, outputs.strides)
+                    for x, anchors, stride in zip(outputs.inference, outputs.anchors, outputs.strides)
                 ], dim=1
             )
         return outputs

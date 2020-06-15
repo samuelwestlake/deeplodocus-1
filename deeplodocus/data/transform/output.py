@@ -56,7 +56,7 @@ class OutputTransformer(Namespace):
                         )
                     )
 
-    def transform(self, outputs, inputs=None, labels=None, additional_data=None):
+    def transform(self, outputs, model=None, inputs=None, labels=None, additional_data=None):
         """
         Calls the appropriate transform method dependant on the number of transformers and outputs
         1 output -> __transform_single_output
@@ -70,10 +70,21 @@ class OutputTransformer(Namespace):
         """
         # Multiple model outputs
         if isinstance(outputs, list) and len(outputs) > 1:
+
+            # REVISIT THIS SOON!
+            return self.__transform_single_output(
+                outputs,
+                model=model,
+                inputs=inputs,
+                labels=labels,
+                additional_data=additional_data
+            )
+
             # 0 or 1 transformers - apply transformer to each output
             if len(self.output_transformer) < 2:
                 return self.__transform_multi_output_series(
                     outputs,
+                    model=model,
                     inputs=inputs,
                     labels=labels,
                     additional_data=additional_data
@@ -83,6 +94,7 @@ class OutputTransformer(Namespace):
             elif len(self.out_transformer) == len(outputs):
                 return self.__transform_multi_output_mapped(
                     outputs,
+                    model=model,
                     inputs=inputs,
                     labels=labels,
                     additional_data=additional_data
@@ -99,6 +111,7 @@ class OutputTransformer(Namespace):
         else:
             return self.__transform_single_output(
                 outputs,
+                model=model,
                 inputs=inputs,
                 labels=labels,
                 additional_data=additional_data
@@ -114,7 +127,8 @@ class OutputTransformer(Namespace):
                                         outputs: list,
                                         inputs=None,
                                         labels=None,
-                                        additional_data=None
+                                        additional_data=None,
+                                        model=None
                                         ) -> list:
         """
         Apply each transform in each transformer to each output
@@ -130,7 +144,8 @@ class OutputTransformer(Namespace):
                         output,
                         inputs=inputs,
                         labels=labels,
-                        additional_data=additional_data
+                        additional_data=additional_data,
+                        model=model
                     )
             # Update the output
             outputs[i] = output
@@ -141,6 +156,7 @@ class OutputTransformer(Namespace):
                                         inputs=None,
                                         labels=None,
                                         additional_data=None,
+                                        model=None
                                         ) -> list:
         """
         Apply each transformer to the corresponding output tensor
@@ -156,7 +172,8 @@ class OutputTransformer(Namespace):
                     output,
                     inputs=inputs,
                     labels=labels,
-                    additional_data=additional_data
+                    additional_data=additional_data,
+                    model=model
                 )
             # Update the output
             outputs[i] = output
@@ -166,7 +183,8 @@ class OutputTransformer(Namespace):
                                   outputs,
                                   inputs=None,
                                   labels=None,
-                                  additional_data=None
+                                  additional_data=None,
+                                  model=None
                                   ):
         """
         Apply the transformer or series of transformers to the output tensor
@@ -180,7 +198,8 @@ class OutputTransformer(Namespace):
                     outputs,
                     inputs=inputs,
                     labels=labels,
-                    additional_data=additional_data
+                    additional_data=additional_data,
+                    model=model
                 )
         return outputs
 

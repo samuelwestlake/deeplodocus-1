@@ -60,14 +60,48 @@ class Tester(Inferer):
 
     def evaluation_batch(self, batch):
         inputs, labels, additional_data = self.clean_single_element_list(batch)
-        inputs = self.to_device(inputs, self.model.device)  # Send data to device
+
+        # Send data to device
+        inputs = self.to_device(inputs, self.model.device)
         labels = self.to_device(labels, self.model.device)
         additional_data = self.to_device(labels, self.model.device)
+
+        # Forward pass
         with torch.no_grad():
-            outputs = self.model(*inputs)  # Infer the outputs from the model over the given mini batch
-        outputs = self.detach(outputs)  # Detach the tensor from the graph
-        self.losses.forward(self.dataset.type, outputs, labels, inputs, additional_data)  # Compute losses
-        outputs = self.transform_manager.transform(outputs, inputs, labels, additional_data)  # Output transforms
-        self.metrics.forward(self.dataset.type, outputs, labels, inputs, additional_data)  # Compute metrics
+            outputs = self.model(*inputs)
+
+        # Detach the tensor from the graph
+        outputs = self.detach(outputs)
+
+        # Compute losses
+        self.losses.forward(
+            flag=self.dataset.type,
+            outputs=outputs,
+            labels=labels,
+            inputs=inputs,
+            additional_data=additional_data,
+            model=self.model
+        )
+
+        # Output transforms
+        outputs = self.transform_manager.transform(
+            outputs=outputs,
+            inputs=inputs,
+            labels=labels,
+            additional_data=additional_data,
+        model=self.model
+        )
+
+        # Compute metrics
+        self.metrics.forward(
+            self.dataset.type,
+            outputs=outputs,
+            inputs=inputs,
+            labels=labels,
+            additional_data=additional_data,
+            model=self.model
+        )
+
+        # Print
         if self.progress_bar is not None:
             self.progress_bar.step()

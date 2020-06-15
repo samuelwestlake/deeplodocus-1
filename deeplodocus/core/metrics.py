@@ -85,11 +85,17 @@ class Metrics(GenericMetrics):
         except DeepError:
             Notification(DEEP_NOTIF_ERROR, DEEP_MSG_METRIC_NOT_FOUND % name)
 
-    def forward(self, flag, outputs, labels, inputs=None, additional_data=None):
+    def forward(self, flag, outputs, labels, inputs=None, additional_data=None, model=None):
         flag = get_corresponding_flag(DEEP_LIST_DATASET, flag, fatal=False)
         metrics = {}
         for metric_name in self.names:
-            metrics[metric_name] = self.__dict__[metric_name].forward(outputs, labels, inputs, additional_data).item()
+            metrics[metric_name] = self.__dict__[metric_name].forward(
+                outputs=outputs,
+                labels=labels,
+                inputs=inputs,
+                additional_data=additional_data,
+                model=model
+            ).item()
         self.update_values(self.values[flag.name.lower()], metrics)
         return metrics
 
@@ -138,11 +144,17 @@ class Losses(GenericMetrics):
         except DeepError:
             Notification(DEEP_NOTIF_ERROR, DEEP_MSG_LOSS_NOT_FOUND % name)
 
-    def forward(self, flag, outputs, labels, inputs=None, additional_data=None):
+    def forward(self, flag, model, outputs, labels, inputs=None, additional_data=None):
         flag = get_corresponding_flag(DEEP_LIST_DATASET, flag, fatal=False)
         losses = {}
         for loss_name in self.names:
-            losses[loss_name] = self.__dict__[loss_name].forward(outputs, labels, inputs, additional_data)
+            losses[loss_name] = self.__dict__[loss_name].forward(
+                model=model,
+                outputs=outputs,
+                labels=labels,
+                inputs=inputs,
+                additional_data=additional_data
+            )
         self.update_values(self.values[flag.name.lower()], losses)
         loss = sum([value for _, value in losses.items()])
         losses = {loss_name: value.item() for loss_name, value in losses.items()}
@@ -185,12 +197,13 @@ class Metric(object):
         self.reduce_method = None
         self.reduce = reduce
 
-    def forward(self, outputs, labels, inputs, additional_data):
+    def forward(self, outputs, labels, inputs, additional_data, model):
         data = {
             DEEP_ENTRY_OUTPUT: outputs,
             DEEP_ENTRY_LABEL: labels,
             DEEP_ENTRY_INPUT: inputs,
-            DEEP_ENTRY_ADDITIONAL_DATA: additional_data
+            DEEP_ENTRY_ADDITIONAL_DATA: additional_data,
+            DEEP_ENTRY_MODEL: model
         }
         args = {arg_name: data[entry_flag] for arg_name, entry_flag in self.args.items()}
         if inspect.isfunction(self.method):
@@ -292,12 +305,13 @@ class Loss(object):
         self.args = self.__check_args()
         self.kwargs = kwargs
 
-    def forward(self, outputs, labels, inputs, additional_data):
+    def forward(self, model, outputs, labels, inputs, additional_data):
         data = {
             DEEP_ENTRY_OUTPUT: outputs,
             DEEP_ENTRY_LABEL: labels,
             DEEP_ENTRY_INPUT: inputs,
-            DEEP_ENTRY_ADDITIONAL_DATA: additional_data
+            DEEP_ENTRY_ADDITIONAL_DATA: additional_data,
+            DEEP_ENTRY_MODEL: model
         }
         args = {arg_name: data[entry_flag] for arg_name, entry_flag in self.args.items()}
         if inspect.isfunction(self.method):
