@@ -71,7 +71,7 @@ class TransformManager(object):
         self.list_label_transformers = self.__load_transformers(labels)
         self.list_additional_data_transformers = self.__load_transformers(additional_data)
 
-    def transform(self, data: Any, index: int, entry: PipelineEntry, augment: bool) -> Any:
+    def transform(self, data: Any, index: int, entry: PipelineEntry, augment: bool, info=None) -> Any:
         """
         AUTHORS:
         --------
@@ -99,7 +99,6 @@ class TransformManager(object):
 
         :return transformed_data: The transformed data
         """
-
         list_transformers = None
 
         #
@@ -136,7 +135,7 @@ class TransformManager(object):
 
         # If we do not point to another transformer, transform directly the data
         if pointer is None:
-            transformed_data = list_transformers[entry.get_entry_type_index()].transform(data, index, augment)
+            transformed_data = list_transformers[entry.get_entry_type_index()].transform(data, index, augment, info)
 
         #
         # If we point to another transformer, load the transformer then transform the data
@@ -164,7 +163,7 @@ class TransformManager(object):
                 Notification(DEEP_NOTIF_FATAL, "The following type of pointer does not exist : " + str(pointer))
 
             # Transform the data with the freshly loaded transformer
-            transformed_data = list_transformers[pointer_entry_index].transform(data, index, augment=augment)
+            transformed_data = list_transformers[pointer_entry_index].transform(data, index, augment=augment, info=info)
 
         return transformed_data
 

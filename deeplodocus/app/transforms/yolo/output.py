@@ -87,6 +87,7 @@ class NMS(object):
     def finish(self):
         self._batch = 0
 
+
 class Visualize(object):
 
     def __init__(

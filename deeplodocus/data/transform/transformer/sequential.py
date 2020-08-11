@@ -56,7 +56,7 @@ class Sequential(Transformer):
             mandatory_transforms_end=mandatory_transforms_end
         )
 
-    def transform(self, transformed_data: Any, index: int, augment: bool) -> Any:
+    def transform(self, transformed_data: Any, index: int, augment: bool, info=None) -> Any:
         """
         AUTHORS:
         --------
@@ -95,7 +95,7 @@ class Sequential(Transformer):
         self.last_transforms = []
 
         # Apply the transforms
-        transformed_data = self.apply_transforms(transformed_data, transforms)
+        transformed_data = self.apply_transforms(transformed_data, transforms, info=info)
 
         # Update the last index
         self.last_index = index

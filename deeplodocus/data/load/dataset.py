@@ -93,6 +93,7 @@ class Dataset(object):
 
         :return item(List[Any]): The list of items at the desired index in each Entry instance
         """
+        i = index
         # If the dataset is not unlimited
         if self.length is not None:
             # If the index given is too big => Error
@@ -124,7 +125,11 @@ class Dataset(object):
                 index=index,
                 items=items,
                 are_transformed=are_transformed,
-                augment=augment
+                augment=augment,
+                info={
+                    "index": i,
+                    "idn": index
+                }
             )
 
         # Convert to numpy array
@@ -254,7 +259,7 @@ class Dataset(object):
 
         return items, are_transformed
 
-    def __transform(self, index: int, items: List[Any], are_transformed: List[bool], augment: bool):
+    def __transform(self, index: int, items: List[Any], are_transformed: List[bool], augment: bool, info=None):
         """
         AUTHORS:
         --------
@@ -281,14 +286,14 @@ class Dataset(object):
         """
         # For each item check if they have to be transformed
         for i, item in enumerate(items):
-
             # If not transformed => Call the TransformManager
             if are_transformed[i] is False:
                 items[i] = self.transform_manager.transform(
                     data=item,
                     entry=self.pipeline_entries[i],
                     index=index,
-                    augment=augment
+                    augment=augment,
+                    info=info
                 )
         return items
 

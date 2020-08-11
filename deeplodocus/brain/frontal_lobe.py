@@ -224,13 +224,13 @@ class FrontalLobe(object):
         if self.tester is None:
             Notification(DEEP_NOTIF_ERROR, DEEP_MSG_NO_TESTER)
         else:
-            self.tester.evaluate(self.model)
+            self.tester.evaluate()
 
     def predict(self):
         if self.predictor is None:
             Notification(DEEP_NOTIF_FATAL, DEEP_MSG_NO_PREDICTOR)
         else:
-            self.predictor.predict(self.model)
+            self.predictor.predict()
 
     def load(self):
         """

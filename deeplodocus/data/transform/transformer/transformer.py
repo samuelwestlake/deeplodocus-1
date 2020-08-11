@@ -4,6 +4,7 @@ from typing import Tuple
 from typing import Union
 from typing import List
 from typing import Any
+import inspect
 
 # Third party libs
 
@@ -235,7 +236,7 @@ class Transformer(object):
         """
         pass # Will be overridden
 
-    def apply_transforms(self, transformed_data, transforms: List[TransformData]) -> Any:
+    def apply_transforms(self, transformed_data, transforms: List[TransformData], info=None) -> Any:
         """
         AUTHORS:
         --------
@@ -261,8 +262,10 @@ class Transformer(object):
         # Apply the transforms
         for transform in transforms:
             try:
+                # Include info if the transform method requires it
+                kwargs = {**transform.kwargs, "info": info} if "info" in inspect.getfullargspec(transform.method)[0] else transform.kwargs
                 # Transform the data and get the transformation settings if a random transform is applied (None else)
-                transformed_data, last_method_used = transform.method(transformed_data, **transform.kwargs)
+                transformed_data, last_method_used = transform.method(transformed_data, **kwargs)
             except ValueError as e:
                 Notification(
                     DEEP_NOTIF_FATAL,

@@ -24,6 +24,7 @@ class Trainer(Inferer):
             num_epochs: int = 1,
             initial_epoch: Union[int, None] = None,
             batch_size: int = 32,
+            accumulate=1,
             num_workers: int = 1,
             shuffle: Flag = DEEP_SHUFFLE_NONE,
             name: str = "Trainer",
@@ -46,6 +47,7 @@ class Trainer(Inferer):
         self.initial_epoch = initial_epoch
         self.epoch = None
         self.batch_index = 1
+        self.accumulate=accumulate
         self.train_loss = None
         self.train_losses = None
         self.train_metrics = None
@@ -78,7 +80,10 @@ class Trainer(Inferer):
         for self.epoch in range(self.initial_epoch + 1, self.num_epochs + self.initial_epoch + 1):
             self.epoch_start()
             for self.batch_index, batch in enumerate(self.dataloader, 1):
-                self.forward2(batch, split=4)
+                if self.accumulate > 1:
+                    self.forward2(batch)
+                else:
+                    self.forward(batch)
             self.epoch_end()
         self.training_end()
 
@@ -129,9 +134,6 @@ class Trainer(Inferer):
     def forward(self, batch):
         inputs, labels, additional_data = self.clean_single_element_list(batch)  # Clean the given data
 
-        # Zero the parameter gradients
-        self.optimizer.zero_grad()
-
         # Send data to device
         inputs = self.to_device(inputs, self.model.device)
         labels = self.to_device(labels, self.model.device)
@@ -153,8 +155,9 @@ class Trainer(Inferer):
         # Backward pass
         loss.backward()
         self.optimizer.step()
+        self.optimizer.zero_grad()
 
-        outputs = self.detach(outputs)  # Detach output tensors
+        outputs = self.detach(outputs)  # Detach output tensors before output transforms and metrics
 
         # Output transforms
         outputs = self.transform_manager.transform(
@@ -189,19 +192,19 @@ class Trainer(Inferer):
             metrics=metrics
         )
 
-    def forward2(self, batch, split=4):
+    def forward2(self, batch):
         # Please leave in for now
         # Example of custom forward method - in development
         inputs, labels, additional_data = self.clean_single_element_list(batch)  # Clean the given data
         b = inputs[0].shape[0]
 
-        if b < split:
-            split = b
+        if b < self.accumulate:
+            self.accumulate = b
 
         self.optimizer.zero_grad()  # zero the parameter gradients
-        for i in range(split):
-            i0 = int(i * b / split)
-            i1 = int((i + 1) * b / split)
+        for i in range(self.accumulate):
+            i0 = int(i * b / self.accumulate)
+            i1 = int((i + 1) * b / self.accumulate)
 
             # Get mini mini batch and put onto device
             inp = self.to_device([item[i0: i1] for item in inputs], self.model.device)
@@ -250,8 +253,8 @@ class Trainer(Inferer):
                 [metrics[key].append(item) for key, item in mini_metrics.items()]
 
         # Reduce loss, losses and metrics
-        loss /= split
-        losses = {key: sum(item) / split for key, item in losses.items()}
+        loss /= self.accumulate
+        losses = {key: sum(item) / self.accumulate for key, item in losses.items()}
         metrics = {key: vars(self.metrics)[key].reduce_method(item) for key, item in metrics.items()}
 
         # Update parameters
