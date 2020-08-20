@@ -112,7 +112,6 @@ class Source(object):
     # GETTERS #
     ###########
 
-
     def get_index(self):
         return self.index
 

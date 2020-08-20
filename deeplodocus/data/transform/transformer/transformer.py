@@ -261,20 +261,19 @@ class Transformer(object):
         """
         # Apply the transforms
         for transform in transforms:
+            kwargs = {**transform.kwargs, "info": info} if "info" in inspect.getfullargspec(transform.method)[0] else transform.kwargs
+
+            transform_output = transform.method(transformed_data, **kwargs)
+
             try:
-                # Include info if the transform method requires it
-                kwargs = {**transform.kwargs, "info": info} if "info" in inspect.getfullargspec(transform.method)[0] else transform.kwargs
-                # Transform the data and get the transformation settings if a random transform is applied (None else)
-                transformed_data, last_method_used = transform.method(transformed_data, **kwargs)
-            except ValueError as e:
+                transformed_data, last_method_used = transform_output
+            except Exception:
                 Notification(
                     DEEP_NOTIF_FATAL,
-                    "ValueError : %s : %s" % (str(e), DEEP_MSG_TRANSFORM_VALUE_ERROR)
-                )
-            except TypeError as e:
-                Notification(
-                    DEEP_NOTIF_FATAL,
-                    "TypeError : %s" % (str(e))
+                    "%s : %s : unable to unpack transform outputs" % (
+                        transform.method.__name__,
+                        transform.method.__module__
+                    )
                 )
 
             # Update the last transforms used and the last index

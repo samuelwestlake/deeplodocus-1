@@ -201,5 +201,4 @@ class Formatter(object):
 
         :return data (np.array): The data with teh axes swapped
         """
-
         return np.transpose(data, self.move_axis)

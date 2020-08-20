@@ -47,7 +47,7 @@ class Trainer(Inferer):
         self.initial_epoch = initial_epoch
         self.epoch = None
         self.batch_index = 1
-        self.accumulate=accumulate
+        self.accumulate = accumulate
         self.train_loss = None
         self.train_losses = None
         self.train_metrics = None
@@ -282,6 +282,8 @@ class Trainer(Inferer):
         if not DEEP_VERBOSE_TRAINING.corresponds(self.verbose):
             self.print_epoch()  # Print training epoch results
         self.send_epoch_end_signal()
+        # Call finish method on sources
+        [s.finish() for e in self.dataloader.dataset.entries for s in e.sources if hasattr(s, "finish")]
         self.transform_manager.finish()  # Call finish method on output transforms
         self.evaluate()  # Validate
         if self.scheduler is not None:

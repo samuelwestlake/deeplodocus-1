@@ -449,6 +449,10 @@ DEEP_CONFIG = {
                 DEEP_CONFIG_DTYPE: str,
                 DEEP_CONFIG_DEFAULT: "mean"
             },
+            "ignore_value": {
+                DEEP_CONFIG_DTYPE: float,
+                DEEP_CONFIG_DEFAULT: None
+            },
             "kwargs": {
                 DEEP_CONFIG_DTYPE: dict,
                 DEEP_CONFIG_DEFAULT: {}

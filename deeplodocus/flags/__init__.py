@@ -7,7 +7,7 @@ from deeplodocus.flags.entry import *
 from deeplodocus.flags.event import *
 from deeplodocus.flags.exit import *
 from deeplodocus.flags.ext import *
-from deeplodocus.flags.filter import *
+from deeplodocus.flags.filters import *
 from deeplodocus.flags.flag_lists import *
 from deeplodocus.flags.lib import *
 from deeplodocus.flags.load import *

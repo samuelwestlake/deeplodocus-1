@@ -77,6 +77,7 @@ class Metrics(GenericMetrics):
                 name=metric.name,
                 module_path=metric.module,
                 reduce=metric.reduce,
+                ignore_value=metric.ignore_value,
                 kwargs=metric.kwargs.get()
             )
             self.__dict__[name] = m
@@ -101,10 +102,20 @@ class Metrics(GenericMetrics):
 
     def reduce(self, flag):
         flag = get_corresponding_flag(DEEP_LIST_DATASET, flag, fatal=False)
-        return {
-            metric_name: self.__dict__[metric_name].reduce_method(values)
-            for metric_name, values in self.values[flag.name.lower()].items()
-        }
+        reduced_metrics = {}
+        for metric_name, values in self.values[flag.name.lower()].items():
+            if self.__dict__[metric_name].ignore_value is not  None:
+                values = list(filter(lambda i: i != self.__dict__[metric_name].ignore_value, values))
+            try:
+                reduced_metrics[metric_name] = self.__dict__[metric_name].reduce_method(values)
+            except ZeroDivisionError:
+                reduced_metrics[metric_name] = float("inf")
+        #return {
+        #    metric_name: self.__dict__[metric_name].reduce_method(values) if self.__dict__[metric_name].ignore_value is None else self.__dict__[metric_name].reduce_method(list(filter(lambda i: i != self.__dict__[metric_name].ignore_value, values)))
+        #    for metric_name, values in self.values[flag.name.lower()].items()
+        #}
+        return reduced_metrics
+
 
     def summary(self):
         self.summary__()
@@ -175,7 +186,7 @@ class Losses(GenericMetrics):
 
 class Metric(object):
 
-    def __init__(self, name: str, module_path: Union[str, None], reduce: str = "mean", kwargs: dict = None):
+    def __init__(self, name: str, module_path: Union[str, None], reduce: str = "mean", ignore_value: float = None, kwargs: dict = None):
         # Get the metric object
         method, module_path = get_module(
             name=name,
@@ -195,6 +206,7 @@ class Metric(object):
         self.args = self.__check_args()
         self.kwargs = kwargs
         self.reduce_method = None
+        self.ignore_value = ignore_value
         self.reduce = reduce
 
     def forward(self, outputs, labels, inputs, additional_data, model):
