@@ -25,7 +25,7 @@ DEEP_ENTRY_OUTPUT = Flag(
 DEEP_ENTRY_ADDITIONAL_DATA = Flag(
     name="Additional data",
     description="Additional Data entry",
-    names=["additional_data"]
+    names=["additional_data", "additional-data", "additionaldata", "additional data"]
 )
 
 DEEP_ENTRY_MODEL = Flag(

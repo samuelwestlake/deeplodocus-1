@@ -64,7 +64,7 @@ class Tester(Inferer):
         # Send data to device
         inputs = self.to_device(inputs, self.model.device)
         labels = self.to_device(labels, self.model.device)
-        additional_data = self.to_device(labels, self.model.device)
+        additional_data = self.to_device(additional_data, self.model.device)
 
         # Forward pass
         with torch.no_grad():
@@ -89,7 +89,7 @@ class Tester(Inferer):
             inputs=inputs,
             labels=labels,
             additional_data=additional_data,
-        model=self.model
+            model=self.model
         )
 
         # Compute metrics

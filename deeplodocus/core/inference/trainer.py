@@ -130,6 +130,11 @@ class Trainer(Inferer):
         self.model.train()  # Put model into train mode
         self.losses.reset(self.dataset.type)  # Reset training losses
         self.metrics.reset(self.dataset.type)  # Reset training metrics
+        learnrates = [param_group['lr'] for param_group in self.optimizer.param_groups]
+        Notification(
+            DEEP_NOTIF_INFO,
+            "Learning rates : %s" % (" : ".join([("param group %i : %.3e" % (i, lr)) for i, lr in enumerate(learnrates)]))
+        )
 
     def forward(self, batch):
         inputs, labels, additional_data = self.clean_single_element_list(batch)  # Clean the given data
