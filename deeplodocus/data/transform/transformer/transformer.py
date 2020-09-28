@@ -261,7 +261,8 @@ class Transformer(object):
         """
         # Apply the transforms
         for transform in transforms:
-            kwargs = {**transform.kwargs, "info": info} if "info" in inspect.getfullargspec(transform.method)[0] else transform.kwargs
+            kwargs = {**transform.kwargs, "info": info} if "info" in inspect.getfullargspec(transform.method)[0] \
+                else transform.kwargs
 
             transform_output = transform.method(transformed_data, **kwargs)
 

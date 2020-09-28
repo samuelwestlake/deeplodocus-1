@@ -90,13 +90,19 @@ class Metrics(GenericMetrics):
         flag = get_corresponding_flag(DEEP_LIST_DATASET, flag, fatal=False)
         metrics = {}
         for metric_name in self.names:
-            metrics[metric_name] = self.__dict__[metric_name].forward(
+            metric_value = vars(self)[metric_name].forward(
                 outputs=outputs,
                 labels=labels,
                 inputs=inputs,
                 additional_data=additional_data,
                 model=model
-            ).item()
+            )
+            if isinstance(metric_value, dict):
+                metrics = {**metrics, **metric_value}
+            elif isinstance(metric_value, torch.Tensor):
+                metrics[metric_name] = metric_value.item()
+            else:
+                metrics[metric_name] = metric_value
         self.update_values(self.values[flag.name.lower()], metrics)
         return metrics
 
@@ -115,7 +121,6 @@ class Metrics(GenericMetrics):
         #    for metric_name, values in self.values[flag.name.lower()].items()
         #}
         return reduced_metrics
-
 
     def summary(self):
         self.summary__()

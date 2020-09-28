@@ -87,7 +87,10 @@ class Sequential(Transformer):
         else:
             # Get mandatory transforms + transform
             if augment is True:
-                transforms = self.list_mandatory_transforms_start + self.list_transforms + self.list_mandatory_transforms_end
+                transforms = \
+                    self.list_mandatory_transforms_start \
+                    + self.list_transforms \
+                    + self.list_mandatory_transforms_end
             else:
                 transforms = self.list_mandatory_transforms_start + self.list_mandatory_transforms_end
 

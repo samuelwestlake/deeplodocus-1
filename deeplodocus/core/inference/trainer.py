@@ -60,13 +60,10 @@ class Trainer(Inferer):
         # Pre-training checks
         if self.model is None:
             Notification(DEEP_NOTIF_ERROR, "Could not begin training : No model detected by the trainer")
-            return False
         if self.losses is None:
             Notification(DEEP_NOTIF_ERROR, "Could not begin training : No losses detected by the trainer")
-            return False
         if self.optimizer is None:
             Notification(DEEP_NOTIF_ERROR, "Could not begin training : No optimizer detected by the trainer")
-            return False
 
         # Update num_epochs
         self.num_epochs = self.num_epochs if num_epochs is None else num_epochs
@@ -80,10 +77,7 @@ class Trainer(Inferer):
         for self.epoch in range(self.initial_epoch + 1, self.num_epochs + self.initial_epoch + 1):
             self.epoch_start()
             for self.batch_index, batch in enumerate(self.dataloader, 1):
-                if self.accumulate > 1:
-                    self.forward2(batch)
-                else:
-                    self.forward(batch)
+                self.forward(batch)
             self.epoch_end()
         self.training_end()
 
@@ -158,9 +152,11 @@ class Trainer(Inferer):
         )
 
         # Backward pass
+        loss /= self.accumulate
         loss.backward()
-        self.optimizer.step()
-        self.optimizer.zero_grad()
+        if not self.batch_index % self.accumulate:
+            self.optimizer.step()
+            self.optimizer.zero_grad()
 
         outputs = self.detach(outputs)  # Detach output tensors before output transforms and metrics
 
@@ -214,7 +210,7 @@ class Trainer(Inferer):
             # Get mini mini batch and put onto device
             inp = self.to_device([item[i0: i1] for item in inputs], self.model.device)
             lab = self.to_device(labels[i0: i1], self.model.device)
-            add = None if additional_data is None else self.to_device(additional_data[i0: i1], self.model.device)
+            add = None if additional_data is None else self.to_device([item[i0: i1] for item in additional_data], self.model.device)
 
             out = self.model(*inp)  # Forward pass
 
