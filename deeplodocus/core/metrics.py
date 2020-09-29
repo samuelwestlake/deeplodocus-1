@@ -99,6 +99,9 @@ class Metrics(GenericMetrics):
             )
             if isinstance(metric_value, dict):
                 metrics = {**metrics, **metric_value}
+                for k in metric_value.keys():
+                    if k not in vars(self):
+                        vars(self)[k] = vars(self)[metric_name]
             elif isinstance(metric_value, torch.Tensor):
                 metrics[metric_name] = metric_value.item()
             else:
@@ -110,16 +113,12 @@ class Metrics(GenericMetrics):
         flag = get_corresponding_flag(DEEP_LIST_DATASET, flag, fatal=False)
         reduced_metrics = {}
         for metric_name, values in self.values[flag.name.lower()].items():
-            if self.__dict__[metric_name].ignore_value is not  None:
+            if self.__dict__[metric_name].ignore_value is not None:
                 values = list(filter(lambda i: i != self.__dict__[metric_name].ignore_value, values))
             try:
                 reduced_metrics[metric_name] = self.__dict__[metric_name].reduce_method(values)
             except ZeroDivisionError:
                 reduced_metrics[metric_name] = float("inf")
-        #return {
-        #    metric_name: self.__dict__[metric_name].reduce_method(values) if self.__dict__[metric_name].ignore_value is None else self.__dict__[metric_name].reduce_method(list(filter(lambda i: i != self.__dict__[metric_name].ignore_value, values)))
-        #    for metric_name, values in self.values[flag.name.lower()].items()
-        #}
         return reduced_metrics
 
     def summary(self):
