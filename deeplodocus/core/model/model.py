@@ -203,6 +203,7 @@ def load_model(
 
     if model_state_dict is not None:
         model_state_dict = dict((k[7:], v) if k.startswith("module.") else (k, v) for k, v in model_state_dict.items())
+        # model_state_dict = dict((k, v) for k, v in model_state_dict.items() if not k.startswith("classifier.2."))
         #print("DEEPLODOCUS MODEL FILE HAS BEEN EDITED TO NOT LOAD FIRST LAYER OF THE NETWORK")
         #model_state_dict = dict((k, v) for k, v in model_state_dict.items() if not k.startswith("backbone.input_layer.0"))  ##############
         model.load_state_dict(model_state_dict, strict=False)

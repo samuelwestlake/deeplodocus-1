@@ -1,4 +1,6 @@
 from typing import Union
+import numpy as np
+import math
 
 from deeplodocus.brain.signal import Signal
 from deeplodocus.brain.thalamus import Thalamus
@@ -77,7 +79,7 @@ class Trainer(Inferer):
         for self.epoch in range(self.initial_epoch + 1, self.num_epochs + self.initial_epoch + 1):
             self.epoch_start()
             for self.batch_index, batch in enumerate(self.dataloader, 1):
-                self.forward(batch)
+                self.forward(batch) if self.accumulate == 1 else self.forward2(batch)
             self.epoch_end()
         self.training_end()
 
@@ -152,11 +154,9 @@ class Trainer(Inferer):
         )
 
         # Backward pass
-        loss /= self.accumulate
         loss.backward()
-        if not self.batch_index % self.accumulate:
-            self.optimizer.step()
-            self.optimizer.zero_grad()
+        self.optimizer.step()
+        self.optimizer.zero_grad()
 
         outputs = self.detach(outputs)  # Detach output tensors before output transforms and metrics
 
@@ -202,7 +202,7 @@ class Trainer(Inferer):
         if b < self.accumulate:
             self.accumulate = b
 
-        self.optimizer.zero_grad()  # zero the parameter gradients
+        loss = 0
         for i in range(self.accumulate):
             i0 = int(i * b / self.accumulate)
             i1 = int((i + 1) * b / self.accumulate)
@@ -242,34 +242,34 @@ class Trainer(Inferer):
                 additional_data=add
             )  # Metrics
 
+            mini_loss /= self.accumulate
             mini_loss.backward()
 
             if i == 0:
-                loss = mini_loss
                 losses = {key: [item] for key, item in mini_losses.items()}
                 metrics = {key: [item] for key, item in mini_metrics.items()}
             else:
-                loss = loss + mini_loss
                 [losses[key].append(item) for key, item in mini_losses.items()]
                 [metrics[key].append(item) for key, item in mini_metrics.items()]
+            loss += mini_loss.item()
 
         # Reduce loss, losses and metrics
-        loss /= self.accumulate
         losses = {key: sum(item) / self.accumulate for key, item in losses.items()}
         metrics = {key: vars(self.metrics)[key].reduce_method(item) for key, item in metrics.items()}
 
         # Update parameters
         self.optimizer.step()
+        self.optimizer.zero_grad()
 
         if DEEP_VERBOSE_BATCH.corresponds(self.verbose):
-            self.print_batch(loss.item(), losses, metrics)
+            self.print_batch(loss, losses, metrics)
         else:
             self.progress_bar.step()
         self.send_batch_end_signal(
             batch_index=self.batch_index,
             num_batches=self.get_num_batches(),
             epoch_index=self.epoch,
-            loss=loss.item(),
+            loss=loss,
             losses=losses,
             metrics=metrics
         )
