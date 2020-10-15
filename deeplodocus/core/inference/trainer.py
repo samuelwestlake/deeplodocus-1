@@ -199,8 +199,7 @@ class Trainer(Inferer):
         inputs, labels, additional_data = self.clean_single_element_list(batch)  # Clean the given data
         b = inputs[0].shape[0]
 
-        if b < self.accumulate:
-            self.accumulate = b
+        self.accumulate = b if b < self.accumulate else self.accumulate
 
         loss = 0
         for i in range(self.accumulate):

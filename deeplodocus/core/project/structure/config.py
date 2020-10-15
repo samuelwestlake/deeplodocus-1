@@ -175,6 +175,10 @@ DEEP_CONFIG = {
             DEEP_CONFIG_DTYPE: str,
             DEEP_CONFIG_DEFAULT: "default"
         },
+        "accumulate": {
+            DEEP_CONFIG_DTYPE: int,
+            DEEP_CONFIG_DEFAULT: 1
+        },
         "scheduler": {
             "name": {
                 DEEP_CONFIG_DEFAULT: None,
