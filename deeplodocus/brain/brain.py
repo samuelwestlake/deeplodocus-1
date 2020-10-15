@@ -368,7 +368,7 @@ class Brain(FrontalLobe):
 
     def pause(self):
         instruction = Notification(DEEP_NOTIF_INPUT, DEEP_MSG_INSTRUCTRION).get()
-        if instruction is not "":
+        if instruction:
             self.__execute_command(instruction)
 
     def ui(self):
