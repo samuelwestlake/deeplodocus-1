@@ -32,6 +32,7 @@ class Trainer(Inferer):
             name: str = "Trainer",
             verbose: Flag = DEEP_VERBOSE_BATCH,
             validator: Union[Tester, None] = None,
+            enable_metrics=True
     ):
         super(Trainer, self).__init__(
             dataset, model, transform_manager, losses,
@@ -57,6 +58,7 @@ class Trainer(Inferer):
         self.val_losses = None
         self.val_metrics = None
         self.progress_bar = None
+        self.enable_metrics = enable_metrics
 
     def train(self, num_epochs: Union[int, None] = None):
         # Pre-training checks
@@ -177,7 +179,7 @@ class Trainer(Inferer):
             labels=labels,
             inputs=inputs,
             additional_data=additional_data
-        )
+        ) if self.enable_metrics else {}
 
         # Print batch and send signal
         if DEEP_VERBOSE_BATCH.corresponds(self.verbose):
@@ -198,7 +200,6 @@ class Trainer(Inferer):
         # Example of custom forward method - in development
         inputs, labels, additional_data = self.clean_single_element_list(batch)  # Clean the given data
         b = inputs[0].shape[0]
-
         self.accumulate = b if b < self.accumulate else self.accumulate
 
         loss = 0
@@ -224,14 +225,16 @@ class Trainer(Inferer):
 
             out = self.detach(out)  # Detach output tensors
 
+            # Output transforms
             out = self.transform_manager.transform(
                 model=self.model,
                 outputs=out,
                 inputs=inp,
                 labels=lab,
                 additional_data=add
-            )  # Output transforms
+            )
 
+            # Metrics
             mini_metrics = self.metrics.forward(
                 flag=self.dataset.type,
                 model=self.model,
@@ -239,7 +242,7 @@ class Trainer(Inferer):
                 labels=lab,
                 inputs=inp,
                 additional_data=add
-            )  # Metrics
+            ) if self.enable_metrics else {}
 
             mini_loss /= self.accumulate
             mini_loss.backward()

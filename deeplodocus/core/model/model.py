@@ -203,8 +203,12 @@ def load_model(
 
     if model_state_dict is not None:
         model_state_dict = dict((k[7:], v) if k.startswith("module.") else (k, v) for k, v in model_state_dict.items())
+        #layers = ("conv_1_4.weight", "conv_1_4.bias", "conv_2_5.weight", "conv_2_5.bias", "conv_3_5.weight", "conv_3_5.bias")
+        #model_state_dict = {k: v if k in layers else v for k, v in model_state_dict.items()}
         #print("DEEPLODOCUS MODEL FILE HAS BEEN EDITED TO NOT LOAD FIRST LAYER OF THE NETWORK")
         #model_state_dict = dict((k, v) for k, v in model_state_dict.items() if not k.startswith("backbone.input_layer.conv3x3"))  ##############
+
+
         model.load_state_dict(model_state_dict, strict=False)
 
     n_devices = torch.cuda.device_count() if device_ids is None else len(device_ids)

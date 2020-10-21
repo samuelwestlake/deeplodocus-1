@@ -179,6 +179,10 @@ DEEP_CONFIG = {
             DEEP_CONFIG_DTYPE: int,
             DEEP_CONFIG_DEFAULT: 1
         },
+        "enable_metrics": {
+            DEEP_CONFIG_DTYPE: bool,
+            DEEP_CONFIG_DEFAULT: True
+        },
         "scheduler": {
             "name": {
                 DEEP_CONFIG_DEFAULT: None,

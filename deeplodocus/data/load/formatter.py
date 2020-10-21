@@ -201,4 +201,8 @@ class Formatter(object):
 
         :return data (np.array): The data with teh axes swapped
         """
-        return np.transpose(data, self.move_axis)
+        try:
+            return np.transpose(data, self.move_axis)
+        except ValueError as e:
+            msg = " Could not transpose data with shape %s by %s : %s"
+            Notification(DEEP_NOTIF_FATAL, msg % (data.shape, self.move_axis, str(e)))
